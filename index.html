@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>vue-router</title>
+
+  <script src="vue.js" ></script>
+  <style>
+  body{
+      font-family:"Segoe UI";
+    }
+    li{
+      list-style:none;
+    }
+    a{
+      text-decoration:none;
+    }
+    .pagination {
+        position: relative;
+
+      }
+      .pagination li{
+        display: inline-block;
+        margin:0 5px;
+      }
+      .pagination li a{
+        padding:.5rem 1rem;
+        display:inline-block;
+        border:1px solid #ddd;
+        background:#fff;
+
+        color:#0E90D2;
+      }
+      .pagination li a:hover{
+        background:#eee;
+      }
+      .pagination li.active a{
+        background:#0E90D2;
+        color:#fff;
+      }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <my-page :nextfuc="fuc1" :rows="rows1" :allpage="total1"></my-page>
+    <my-page @nextpage="fuc2" :allpage="total2"></my-page>
+    <my-page :allpage="total3"></my-page>
+  </div>
+    
+    
+<script>
+
+  Vue.component("my-page",{
+      template:`<ul class="pagination" >
+          <li v-show="current != 1" @click="goto(1)" ><a href="#">首页</a></li>
+          <li v-show="current != 1" @click="goto(current-1)" ><a href="#">上一页</a></li>
+          <li v-for="index in pages" @click="goto(index)" :class="{'active':current == index}" :key="index">
+            <a href="#" >{{index}}</a>
+          </li>
+          <li v-show="allpage != current && allpage != 0 " @click="goto(current+1)"><a href="#" >下一页</a></li>
+          <li v-show="current != allpage" @click="goto(allpage)"><a href="#" >尾页</a></li>
+      </ul>`,
+      data:function(){
+        return {
+          current:1
+        };
+      },
+      props:{
+        rows:{
+          default: 10,
+        },
+        showItem:{
+          default:5,
+        },
+        allpage:{
+          default:1,
+        },
+        nextfuc:Function
+      },
+      computed:{
+        pages:function(){
+              var page = [];
+
+                if( this.current < this.showItem ){ //当前页小于要显示的页数
+                     //总页数和要显示的条数那个大就显示多少条
+                     var i = Math.min(this.showItem,this.allpage);
+                     while(i){
+                         page.unshift(i--);
+                     }
+                 }else{ //当前页数大于显示页数了
+                     var middle = this.current - Math.floor(this.showItem / 2 ),//最小值
+                         i = this.showItem;//显示几个
+                     if( middle >  (this.allpage - this.showItem)  ){
+                         middle = (this.allpage - this.showItem) + 1
+                     }
+                     while(i--){
+                         page.push( middle++ );
+                     }
+                 }
+               return page;
+             }
+    },
+    methods:{
+      goto:function(index){
+        if(index == this.current) return;
+        this.current = index;
+        if(this.nextfuc){
+          this.nextfuc(this.current,this.rows);
+        }else{
+          this.$emit('nextpage',{'page':this.current,'rows':this.rows});
+        }
+      }
+    }
+  })
+
+var vm = new Vue({
+  el:'#app',
+  data:{
+    rows1:10,
+    total1:11,
+    rows2:20,
+    total2:12,
+    rows3:30,
+    total3:13,
+  },
+  methods:{
+    fuc1:function(page,rows){
+      console.log(page,rows);
+    },
+    fuc2:function(j){
+      console.log(j);
+    }
+  }
+})
+
+
+
+</script>
+</body>
+</html>
+
